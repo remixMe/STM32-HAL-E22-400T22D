@@ -1,4 +1,4 @@
-#include "bsp_e22.h"
+#include "e22.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -17,7 +17,7 @@ __STATIC_INLINE void Set_M1_Low(void) {
 __STATIC_INLINE void Wait_For_E22(void) {
     HAL_Delay(15);
     while (HAL_GPIO_ReadPin(E22_AUX_GPIO_Port, E22_AUX_Pin) == GPIO_PIN_RESET) {}
-    HAL_Delay(5); //Ä£¿éÊÖ²á½¨Òé
+    HAL_Delay(5); //æ¨¡å—æ‰‹å†Œå»ºè®®
 }
 typedef struct {
     uint8_t  buffer[E22_UART_BUFFER_MAX_LENGTH];
@@ -36,7 +36,7 @@ static e22_uart_buffer_struct_t e22_uart_buffer;
 
 void E22_FullSet_Register(E22_ConfigTypeDef *E22_ConfigStruct) {
     E22_Mode(E22_Mode_Config);
-    // ´Ó0×Ö½Ú¿ªÊ¼´«Êä9×Ö½ÚÊý¾Ý
+    // ä»Ž0å­—èŠ‚å¼€å§‹ä¼ è¾“9å­—èŠ‚æ•°æ®
     e22_uart_buffer.send_buffer[0] = 0xC0;
     e22_uart_buffer.send_buffer[1] = 0x00;
     e22_uart_buffer.send_buffer[2] = 0x09;
@@ -100,7 +100,7 @@ void E22_Mode(E22Mode_TypeDef mode) {
 }
 
 void E22_Buffer_Reset(void) {
-    //»º´æ³õÊ¼»¯
+    //ç¼“å­˜åˆå§‹åŒ–
     e22_uart_buffer.count  = 0;
     e22_uart_buffer.inPos  = 0;
     e22_uart_buffer.outPos = 0;
@@ -108,7 +108,7 @@ void E22_Buffer_Reset(void) {
 
 uint8_t E22_UART_Packet_Pop(uint8_t *buffer) {
     e22_uart_packet_struct_t *packet = &e22_uart_buffer.packets[e22_uart_buffer.outPos];
-    //ÎÞ»º´æÊ±·µ»Ø0
+    //æ— ç¼“å­˜æ—¶è¿”å›ž0
     if (e22_uart_buffer.count == 0) { return 0; }
     memcpy(buffer, packet->buffer, sizeof(uint8_t) * (packet->length));
     (e22_uart_buffer.outPos)++;
@@ -130,22 +130,22 @@ uint8_t E22_UART_Buffer_isEmpty(void) {
 
 void E22_Set(void) {
     E22_ConfigTypeDef E22_ConfigStruct;
-    E22_ConfigStruct.Address           = (uint16_t)0x0001;
-    E22_ConfigStruct.NetID             = (uint8_t)0x01;
-    E22_ConfigStruct.UARTSpeed         = E22_UARTSpeed_9600;
-    E22_ConfigStruct.ParityBit         = E22_UARTParityBit_8N1;
-    E22_ConfigStruct.AirRate           = E22_AirRate_2400;
-    E22_ConfigStruct.SubPacket         = E22_SubPacket_240B;
-    E22_ConfigStruct.RSSI              = E22_RSSI_Disable;
-    E22_ConfigStruct.TransmissionPower = E22_TransmissionPower_22dBm;
-    E22_ConfigStruct.Channel           = (uint8_t)23;
-    E22_ConfigStruct.RSSIByte          = E22_RSSIByte_Disable;
-    E22_ConfigStruct.TransmissionMode  = E22_TransmissionMode_FixedPoint;
-    E22_ConfigStruct.Repeater          = E22_Repeater_Disable;
-    E22_ConfigStruct.LBT               = E22_LBT_Disable;
-    E22_ConfigStruct.WORControl        = E22_WOR_Receiver;
-    E22_ConfigStruct.WORPeriod         = E22_WORPeriod_1000ms;
-    E22_ConfigStruct.CRYPT             = (uint16_t)0x1234;
+    E22_ConfigStruct.Address           = E22_ADDRESS;
+    E22_ConfigStruct.NetID             = E22_NET_ID;
+    E22_ConfigStruct.UARTSpeed         = E22_UART_SPEED;
+    E22_ConfigStruct.ParityBit         = E22_PARITY_BIT;
+    E22_ConfigStruct.AirRate           = E22_AIR_RATE;
+    E22_ConfigStruct.SubPacket         = E22_SUB_PACKET;
+    E22_ConfigStruct.RSSI              = E22_RSSI;
+    E22_ConfigStruct.TransmissionPower = E22_TRANSMISSION_POWER;
+    E22_ConfigStruct.Channel           = E22_CHANNEL;
+    E22_ConfigStruct.RSSIByte          = E22_RSSI_BYTE;
+    E22_ConfigStruct.TransmissionMode  = E22_TRANSMISSION_MODE;
+    E22_ConfigStruct.Repeater          = E22_REPEATER;
+    E22_ConfigStruct.LBT               = E22_LBT;
+    E22_ConfigStruct.WORControl        = E22_WOR_CONTROL;
+    E22_ConfigStruct.WORPeriod         = E22_WOR_PERIOD;
+    E22_ConfigStruct.CRYPT             = E22_CRYPT;
     E22_FullSet_Register(&E22_ConfigStruct);
 }
 

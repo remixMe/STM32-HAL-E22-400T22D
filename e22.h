@@ -2,17 +2,13 @@
 #define __E22_H
 #include "main.h"
 #include "usart.h"
-
-#define E22_UART_BUFFER_MAX_LENGTH (240)
-#define E22_UART_BUFFER_DEPTH      (20)
-
-#define E22_UART_HANDLE            huart2
+#include "e22_conf.h"
 
 typedef enum {
-    E22_Mode_Transmission = 0x00, //!< E22´«ÊäÄ£Ê½
-    E22_Mode_WOR          = 0x01, //!< E22WORÄ£Ê½
-    E22_Mode_Config       = 0x02, //!< E22ÅäÖÃÄ£Ê½
-    E22_Mode_Sleep        = 0x03  //!< E22Ë¯ÃßÄ£Ê½
+    E22_Mode_Transmission = 0x00, //!< E22ä¼ è¾“æ¨¡å¼
+    E22_Mode_WOR          = 0x01, //!< E22WORæ¨¡å¼
+    E22_Mode_Config       = 0x02, //!< E22é…ç½®æ¨¡å¼
+    E22_Mode_Sleep        = 0x03  //!< E22ç¡çœ æ¨¡å¼
 } E22Mode_TypeDef;
 // REG0
 typedef enum {
@@ -125,41 +121,59 @@ typedef struct {
 } E22_ConfigTypeDef;
 
 void E22_Buffer_Reset(void);
+/**
+ * @brief è¯»å–è®¾å¤‡åºåˆ—å·
+ *
+ */
 void E22_Read_PID(void);
+/**
+ * @brief è¯»å–è®¾å¤‡é…ç½®
+ *
+ */
 void E22_Read_Register(void);
+/**
+ * @brief å®Œæ•´é…ç½®E22
+ *
+ * @param E22_ConfigStruct    E22é…ç½®ç»“æž„ä½“
+ */
 void E22_FullSet_Register(E22_ConfigTypeDef *E22_ConfigStruct);
+/**
+ * @brief æŒ‡å®šE22æ¨¡å¼
+ *
+ * @param mode
+ */
 void E22_Mode(E22Mode_TypeDef mode);
 
 /**
- * @brief ´ÓE22½ÓÊÕ»º´æ¶ÓÁÐÖÐÈ¡³öÒ»¸ö°ü
+ * @brief ä»ŽE22æŽ¥æ”¶ç¼“å­˜é˜Ÿåˆ—ä¸­å–å‡ºä¸€ä¸ªåŒ…
  *
- * @param buffer »º´æ°üÊý¾Ý
- * @retval uint8_t »º´æ°ü³¤¶È
+ * @param buffer ç¼“å­˜åŒ…æ•°æ®
+ * @retval uint8_t ç¼“å­˜åŒ…é•¿åº¦
  */
 uint8_t E22_UART_Packet_Pop(uint8_t *buffer);
 /**
- * @brief ¼ì²éE22½ÓÊÕ»º´æ¶ÓÁÐÖÐÊÇ·ñ»¹ÓÐÎ´È¡³öµÄ°ü
+ * @brief æ£€æŸ¥E22æŽ¥æ”¶ç¼“å­˜é˜Ÿåˆ—ä¸­æ˜¯å¦è¿˜æœ‰æœªå–å‡ºçš„åŒ…
  *
  * @retval uint8_t T/F
  */
 uint8_t E22_UART_Buffer_isEmpty(void);
 /**
- * @brief ÅäÖÃE22
+ * @brief é…ç½®E22
  *
  */
 void    E22_Set(void);
 /**
- * @brief ¿ªÆôE22´®¿Ú½ÓÊÕÖÐ¶Ï
+ * @brief å¼€å¯E22ä¸²å£æŽ¥æ”¶ä¸­æ–­
  *
  */
 void    E22_StartReceive(void);
 /**
  * @brief
  *
- * @param address  Ä¿±êµØÖ·
- * @param channel  Ä¿±êÐÅµÀ
- * @param data     Êý¾ÝÊ×µØÖ·
- * @param length   Êý¾Ý°ü³¤¶È
+ * @param address  ç›®æ ‡åœ°å€
+ * @param channel  ç›®æ ‡ä¿¡é“
+ * @param data     æ•°æ®é¦–åœ°å€
+ * @param length   æ•°æ®åŒ…é•¿åº¦
  */
 void    E22_Send(uint16_t address, uint8_t channel, uint8_t *data, uint16_t length);
 #endif // !__E22_H
