@@ -4,6 +4,19 @@
 #include "usart.h"
 #include "e22_conf.h"
 
+typedef struct {
+    uint8_t  buffer[E22_UART_BUFFER_MAX_LENGTH];
+    uint16_t length;
+} e22_uart_packet_struct_t;
+
+typedef struct {
+    uint8_t                  count;
+    uint8_t                  inPos;
+    uint8_t                  outPos;
+    e22_uart_packet_struct_t receivedPackets[E22_UART_BUFFER_DEPTH];
+    uint8_t                  send_buffer[E22_UART_BUFFER_MAX_LENGTH];
+} e22_uart_buffer_struct_t;
+
 typedef enum {
     E22_Mode_Transmission = 0x00, //!< E22传输模式
     E22_Mode_WOR          = 0x01, //!< E22WOR模式

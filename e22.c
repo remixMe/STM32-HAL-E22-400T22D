@@ -19,18 +19,6 @@ __STATIC_INLINE void Wait_For_E22(void) {
     while (HAL_GPIO_ReadPin(E22_AUX_GPIO_Port, E22_AUX_Pin) == GPIO_PIN_RESET) {}
     HAL_Delay(5); //模块手册建议
 }
-typedef struct {
-    uint8_t  buffer[E22_UART_BUFFER_MAX_LENGTH];
-    uint16_t length;
-} e22_uart_packet_struct_t;
-
-typedef struct {
-    uint8_t                  count;
-    uint8_t                  inPos;
-    uint8_t                  outPos;
-    e22_uart_packet_struct_t packets[E22_UART_BUFFER_DEPTH];
-    uint8_t                  send_buffer[E22_UART_BUFFER_MAX_LENGTH];
-} e22_uart_buffer_struct_t;
 
 static e22_uart_buffer_struct_t e22_uart_buffer;
 
@@ -107,7 +95,7 @@ void E22_Buffer_Reset(void) {
 }
 
 uint8_t E22_UART_Packet_Pop(uint8_t *buffer) {
-    e22_uart_packet_struct_t *packet = &e22_uart_buffer.packets[e22_uart_buffer.outPos];
+    e22_uart_packet_struct_t *packet = &e22_uart_buffer.receivedPackets[e22_uart_buffer.outPos];
     //无缓存时返回0
     if (e22_uart_buffer.count == 0) { return 0; }
     memcpy(buffer, packet->buffer, sizeof(uint8_t) * (packet->length));
@@ -150,26 +138,29 @@ void E22_Set(void) {
 }
 
 void E22_StartReceive(void) {
-    e22_uart_packet_struct_t *currentPacket = &e22_uart_buffer.packets[e22_uart_buffer.inPos];
+    e22_uart_packet_struct_t *currentPacket =
+        &e22_uart_buffer.receivedPackets[e22_uart_buffer.inPos];
     HAL_UARTEx_ReceiveToIdle_DMA(&E22_UART_HANDLE, currentPacket->buffer,
                                  E22_UART_BUFFER_MAX_LENGTH);
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
     if (huart->Instance == E22_UART_HANDLE.Instance) {
-        e22_uart_packet_struct_t *currentPacket = &e22_uart_buffer.packets[e22_uart_buffer.inPos];
-        currentPacket->length                   = Size;
+        e22_uart_packet_struct_t *currentPacket =
+            &e22_uart_buffer.receivedPackets[e22_uart_buffer.inPos];
+        currentPacket->length = Size;
         e22_uart_buffer.inPos++;
         if (e22_uart_buffer.inPos == E22_UART_BUFFER_DEPTH) { e22_uart_buffer.inPos = 0; }
         e22_uart_buffer.count++;
         E22_StartReceive();
     }
 }
-void E22_Send(uint16_t address, uint8_t channel, uint8_t *data, uint16_t length) {
+void E22_Send(uint16_t address, uint8_t channel, e22_uart_packet_struct_t *packet2Send) {
     e22_uart_buffer.send_buffer[0] = (address & 0xFF00) >> 8;
     e22_uart_buffer.send_buffer[1] = (address & 0x00FF);
     e22_uart_buffer.send_buffer[2] = channel;
-    memcpy(&e22_uart_buffer.send_buffer[3], data, sizeof(uint8_t) * length);
+    uint16_t length                = packet2Send->length;
+    memcpy(&e22_uart_buffer.send_buffer[3], packet2Send->buffer, sizeof(uint8_t) * length);
     Wait_For_E22();
     HAL_UART_Transmit_DMA(&E22_UART_HANDLE, e22_uart_buffer.send_buffer, length + 3);
 }
