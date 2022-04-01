@@ -133,7 +133,7 @@ typedef struct {
     uint16_t                     CRYPT;
 } E22_ConfigTypeDef;
 
-void E22_Buffer_Reset(void);
+void E22_Init(void);
 /**
  * @brief 读取设备序列号
  *
@@ -189,4 +189,7 @@ void    E22_StartReceive(void);
  * @param length   数据包长度
  */
 void    E22_Send(uint16_t address, uint8_t channel, e22_uart_packet_struct_t *packet2Send);
+#if (USE_HAL_UART_REGISTER_CALLBACKS == 1)
+void E22_PacketReceived_Callback(UART_HandleTypeDef *huart, uint16_t Size);
+#endif
 #endif // !__E22_H

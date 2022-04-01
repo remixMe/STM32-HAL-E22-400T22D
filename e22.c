@@ -87,11 +87,15 @@ void E22_Mode(E22Mode_TypeDef mode) {
     Wait_For_E22();
 }
 
-void E22_Buffer_Reset(void) {
+void E22_Init(void) {
     //缓存初始化
     e22_uart_buffer.count  = 0;
     e22_uart_buffer.inPos  = 0;
     e22_uart_buffer.outPos = 0;
+#if (USE_HAL_UART_REGISTER_CALLBACKS == 1)
+    //注册回调函数
+    HAL_UART_RegisterRxEventCallback(&E22_UART_HANDLE, E22_PacketReceived_Callback);
+#endif
 }
 
 uint8_t E22_UART_Packet_Pop(uint8_t *buffer) {
@@ -143,7 +147,19 @@ void E22_StartReceive(void) {
     HAL_UARTEx_ReceiveToIdle_DMA(&E22_UART_HANDLE, currentPacket->buffer,
                                  E22_UART_BUFFER_MAX_LENGTH);
 }
-
+#if (USE_HAL_UART_REGISTER_CALLBACKS == 1)
+void E22_PacketReceived_Callback(UART_HandleTypeDef *huart, uint16_t Size) {
+    if (huart->Instance == E22_UART_HANDLE.Instance) {
+        e22_uart_packet_struct_t *currentPacket =
+            &e22_uart_buffer.receivedPackets[e22_uart_buffer.inPos];
+        currentPacket->length = Size;
+        e22_uart_buffer.inPos++;
+        if (e22_uart_buffer.inPos == E22_UART_BUFFER_DEPTH) { e22_uart_buffer.inPos = 0; }
+        e22_uart_buffer.count++;
+        E22_StartReceive();
+    }
+}
+#else
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
     if (huart->Instance == E22_UART_HANDLE.Instance) {
         e22_uart_packet_struct_t *currentPacket =
@@ -155,6 +171,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
         E22_StartReceive();
     }
 }
+#endif
 void E22_Send(uint16_t address, uint8_t channel, e22_uart_packet_struct_t *packet2Send) {
     e22_uart_buffer.send_buffer[0] = (address & 0xFF00) >> 8;
     e22_uart_buffer.send_buffer[1] = (address & 0x00FF);
