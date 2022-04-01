@@ -188,5 +188,5 @@ void    E22_StartReceive(void);
  * @param data     数据首地址
  * @param length   数据包长度
  */
-void    E22_Send(uint16_t address, uint8_t channel, uint8_t *data, uint16_t length);
+void    E22_Send(uint16_t address, uint8_t channel, e22_uart_packet_struct_t *packet2Send);
 #endif // !__E22_H
