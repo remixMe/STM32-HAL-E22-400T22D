@@ -14,7 +14,7 @@ __STATIC_INLINE void Set_M1_High(void) {
 __STATIC_INLINE void Set_M1_Low(void) {
     HAL_GPIO_WritePin(E22_M1_GPIO_Port, E22_M1_Pin, GPIO_PIN_RESET);
 }
-__STATIC_INLINE void Wait_For_E22(void) {
+static void Wait_For_E22(void) {
     HAL_Delay(15);
     while (HAL_GPIO_ReadPin(E22_AUX_GPIO_Port, E22_AUX_Pin) == GPIO_PIN_RESET) {}
     HAL_Delay(5); //模块手册建议
@@ -147,6 +147,7 @@ void E22_StartReceive(void) {
     HAL_UARTEx_ReceiveToIdle_DMA(&E22_UART_HANDLE, currentPacket->buffer,
                                  E22_UART_BUFFER_MAX_LENGTH);
 }
+
 #if (USE_HAL_UART_REGISTER_CALLBACKS == 1)
 void E22_PacketReceived_Callback(UART_HandleTypeDef *huart, uint16_t Size) {
     if (huart->Instance == E22_UART_HANDLE.Instance) {
@@ -172,6 +173,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
     }
 }
 #endif
+
 void E22_Send(uint16_t address, uint8_t channel, e22_uart_packet_struct_t *packet2Send) {
     e22_uart_buffer.send_buffer[0] = (address & 0xFF00) >> 8;
     e22_uart_buffer.send_buffer[1] = (address & 0x00FF);
