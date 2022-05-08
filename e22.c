@@ -105,9 +105,7 @@ uint8_t E22_UART_Packet_Pop(uint8_t *buffer) {
     memcpy(buffer, packet->buffer, sizeof(uint8_t) * (packet->length));
     (e22_uart_buffer.outPos)++;
     if (e22_uart_buffer.outPos == E22_UART_BUFFER_DEPTH) { e22_uart_buffer.outPos = 0; }
-    // char tmp[30];
-    // sprintf(tmp, "count=%d,length=%d\n", e22_uart_buffer.count, packet->length);
-    // __DEBUG_UART_SendString(tmp);
+    // printf("count=%d,length=%d\n", e22_uart_buffer.count, packet->length);
     (e22_uart_buffer.count)--;
     return packet->length;
 }
@@ -175,11 +173,11 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 #endif
 
 void E22_Send(uint16_t address, uint8_t channel, e22_uart_packet_struct_t *packet2Send) {
-    e22_uart_buffer.send_buffer[0] = (address & 0xFF00) >> 8;
-    e22_uart_buffer.send_buffer[1] = (address & 0x00FF);
+    e22_uart_buffer.send_buffer[0] = (address >> 8) & 0xFF;
+    e22_uart_buffer.send_buffer[1] = (address)&0xFF;
     e22_uart_buffer.send_buffer[2] = channel;
     uint16_t length                = packet2Send->length;
-    memcpy(&e22_uart_buffer.send_buffer[3], packet2Send->buffer, sizeof(uint8_t) * length);
+    memcpy(&e22_uart_buffer.send_buffer[3], packet2Send->buffer, length);
     Wait_For_E22();
     HAL_UART_Transmit_DMA(&E22_UART_HANDLE, e22_uart_buffer.send_buffer, length + 3);
 }
